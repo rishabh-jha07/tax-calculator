@@ -1,0 +1,82 @@
+# API version specifies the Kubernetes API group and version for Deployments.
+# 'apps/v1' is the stable version for managing stateless applications.
+apiVersion: apps/v1
+
+# The 'kind' defines what type of Kubernetes object we are creating.
+# A Deployment manages replica sets and ensures the desired number of pods are running.
+kind: Deployment
+
+# 'metadata' provides data that uniquely identifies the object.
+metadata:
+  # The name of this deployment object in the Kubernetes cluster.
+  name: tax-calculator-deployment
+  # Labels are key/value pairs that help categorize and identify objects.
+  labels:
+    app: tax-calculator
+
+# 'spec' defines the desired state of the Deployment.
+spec:
+  # Specifies that we want exactly 3 identical pods (instances) running at all times for high availability.
+  replicas: 3
+
+  # The 'selector' tells the Deployment which pods it should manage.
+  # It looks for pods that match the label 'app: tax-calculator'.
+  selector:
+    matchLabels:
+      app: tax-calculator
+
+  # Strategy defines how pods are replaced during an update (Rolling update requirement).
+  strategy:
+    # 'RollingUpdate' means old pods are gradually replaced with new ones, ensuring zero downtime.
+    type: RollingUpdate
+    rollingUpdate:
+      # The maximum number of pods that can be unavailable during the update process (e.g., 1 pod).
+      maxUnavailable: 1
+      # The maximum number of extra pods that can be created above the desired replica count during the update.
+      maxSurge: 1
+
+  # 'template' defines the blueprint for the pods that will be created by this deployment.
+  template:
+    # Pod metadata, containing labels that MUST match the selector defined above.
+    metadata:
+      labels:
+        app: tax-calculator
+    
+    # 'spec' for the pod defines the actual containers to run.
+    spec:
+      containers:
+        # A name for the specific container inside the pod.
+        - name: tax-calculator-app
+          
+          # The Docker image to pull and run. (Replace with your actual registry path).
+          image: <REGION>.icr.io/<YOUR_NAMESPACE>/tax-calculator:latest
+          
+          # Defines the policy for pulling the image from the registry.
+          imagePullPolicy: Always
+          
+          # Exposes ports from the container to the cluster network.
+          ports:
+            # The port the application listens on internally.
+            - containerPort: 3000
+          
+          # Environment variables to inject into the container at runtime.
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          
+          # Resource limits restrict how much CPU and memory the container is allowed to consume.
+          resources:
+            # 'requests' define the minimum guaranteed resources the container gets.
+            requests:
+              # 100 millicores (0.1 CPU).
+              cpu: "100m"
+              # 128 Megabytes of memory.
+              memory: "128Mi"
+            # 'limits' define the absolute maximum resources the container can use before being throttled or killed.
+            limits:
+              # 300 millicores (0.3 CPU).
+              cpu: "300m"
+              # 256 Megabytes of memory.
+              memory: "256Mi"

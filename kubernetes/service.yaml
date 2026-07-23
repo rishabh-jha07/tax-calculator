@@ -1,0 +1,35 @@
+# API version for standard core objects like Service, Pod, ConfigMap.
+apiVersion: v1
+
+# Defines the object type. A Service exposes an application running on a set of Pods as a network service.
+kind: Service
+
+# Identifies the Service object.
+metadata:
+  # The name of the service, which will be used for internal DNS resolution within the cluster.
+  name: tax-calculator-service
+  # Labels for categorizing this service.
+  labels:
+    app: tax-calculator
+
+# Defines the desired state of the Service.
+spec:
+  # The 'type' determines how the Service is exposed.
+  # 'LoadBalancer' provisions an external IP through your cloud provider (e.g., IBM Cloud) to expose the app to the internet.
+  type: LoadBalancer
+
+  # The selector maps this Service to the Pods it should send traffic to.
+  # It looks for pods running with the label 'app: tax-calculator' (which matches our deployment pods).
+  selector:
+    app: tax-calculator
+
+  # Defines port mappings for routing traffic.
+  ports:
+    # Port name (useful if there are multiple ports).
+    - name: http
+      # The port that this Service will be accessible on externally.
+      port: 80
+      # The target port on the container where traffic should be forwarded to.
+      targetPort: 3000
+      # The network protocol to use.
+      protocol: TCP

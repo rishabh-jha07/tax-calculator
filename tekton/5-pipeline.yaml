@@ -1,0 +1,66 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: tax-calculator-pipeline
+spec:
+  description: >-
+    This pipeline orchestrates the complete CI/CD workflow: cloning the repo, 
+    running Jasmine tests, building and pushing the Docker image, deploying 
+    to Kubernetes, and verifying the rollout.
+  workspaces:
+    - name: shared-workspace
+      description: This workspace is shared among all tasks to pass the source code along the pipeline.
+  params:
+    - name: repo-url
+      description: The URL of the git repository to clone.
+      type: string
+    - name: image-reference
+      description: The Docker image reference to build and push.
+      type: string
+  tasks:
+    # 1. Clone Repository
+    - name: clone-repository
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.repo-url)
+
+    # 2. Run Jasmine Tests
+    - name: run-jasmine-tests
+      taskRef:
+        name: npm-test
+      runAfter:
+        - clone-repository
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # 3 & 4. Build and Push Docker Image
+    - name: build-and-push-image
+      taskRef:
+        name: buildah-build-push
+      runAfter:
+        - run-jasmine-tests
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: $(params.image-reference)
+
+    # 5 & 6. Deploy to Kubernetes & Verify Deployment
+    - name: deploy-to-kubernetes
+      taskRef:
+        name: kubernetes-deploy
+      runAfter:
+        - build-and-push-image
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: $(params.image-reference)

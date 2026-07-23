@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    # Build the image automatically using the Dockerfile in the current directory
+    build: .
+    
+    # Custom name for the container
+    container_name: tax-calculator-app
+    
+    # Restart policy: automatically restart if the container crashes, unless manually stopped
+    restart: unless-stopped
+    
+    # Map port 3000 of the host machine to port 3000 inside the container
+    ports:
+      - "3000:3000"
+      
+    # Pass environment variables to the container
+    environment:
+      - PORT=3000
+      - NODE_ENV=production

@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: buildah-build-push
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: image-build
+spec:
+  description: >-
+    This task builds a Docker image and pushes it to a container registry
+    using Buildah. Combining build and push into a single task is an IBM Cloud 
+    best practice as it avoids heavy I/O overhead of passing tarballs between tasks.
+  workspaces:
+    - name: source
+      description: The workspace containing the cloned source code and Dockerfile.
+  params:
+    - name: IMAGE
+      description: Reference of the image build to push (e.g., us.icr.io/namespace/tax-calculator:latest)
+    - name: DOCKERFILE
+      description: Path to the Dockerfile to build
+      default: ./Dockerfile
+    - name: CONTEXT
+      description: Path to the directory to use as context
+      default: .
+  steps:
+    - name: build-and-push
+      image: quay.io/buildah/stable:v1.23.3
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        privileged: true # Required for Buildah inside Kubernetes
+      script: |
+        # Build the image using the context and Dockerfile
+        buildah bud --format docker -f $(params.DOCKERFILE) -t $(params.IMAGE) $(params.CONTEXT)
+        
+        # Push the image to the IBM Cloud Container Registry
+        # The registry credentials should be mapped via a ServiceAccount secret
+        buildah push $(params.IMAGE) docker://$(params.IMAGE)

@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: kubernetes-deploy
+spec:
+  description: This task deploys the application to the Kubernetes cluster using kubectl.
+  workspaces:
+    - name: source
+      description: The workspace containing the kubernetes manifests.
+  params:
+    - name: IMAGE
+      description: The image reference to deploy
+      type: string
+  steps:
+    - name: deploy
+      # Using a lightweight kubectl image
+      image: bitnami/kubectl:latest
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -e
+        echo "Updating image in deployment.yaml..."
+        sed -i "s|<REGION>.icr.io/<YOUR_NAMESPACE>/tax-calculator:latest|$(params.IMAGE)|g" kubernetes/deployment.yaml
+        
+        echo "Applying deployment and service to the cluster..."
+        kubectl apply -f kubernetes/
+        
+        echo "Waiting for rollout to complete..."
+        kubectl rollout status deployment/tax-calculator-deployment
