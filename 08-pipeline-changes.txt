@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: tax-calculator-pipeline
+spec:
+  description: Tekton pipeline including npminstall, tests, and build tasks.
+  workspaces:
+    - name: pipeline-workspace
+      description: Shared workspace for pipeline tasks.
+  params:
+    - name: repo-url
+      type: string
+      description: The Git repository URL.
+    - name: image-reference
+      type: string
+      description: The image reference to build and push.
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
+      params:
+        - name: url
+          value: $(params.repo-url)
+
+    - name: npminstall
+      taskRef:
+        name: npm
+      runAfter:
+        - clone
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: ARGS
+          value:
+            - install
+
+    - name: tests
+      taskRef:
+        name: jasmine
+      runAfter:
+        - npminstall
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+
+    - name: build
+      taskRef:
+        name: buildah
+      runAfter:
+        - tests
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      params:
+        - name: IMAGE
+          value: $(params.image-reference)
