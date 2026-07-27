@@ -1,4 +1,4 @@
-$ docker build -t tax-calculator -f 02-dockerfile .
+docker build -t tax-calculator -f 02-dockerfile .
 Sending build context to Docker daemon  1.24MB
 Step 1/6 : FROM nginx
  ---> 605c776e34dd
