@@ -1,4 +1,4 @@
-docker build -t tax-calculator -f 02-dockerfile .
+docker build -t us.icr.io/sn-labs-rishabh/tax-calculator:1 .
 Sending build context to Docker daemon  1.24MB
 Step 1/6 : FROM nginx
  ---> 605c776e34dd
@@ -18,4 +18,4 @@ Step 6/6 : COPY taxCalculator.js /usr/share/nginx/html/
  ---> Using cache
  ---> e5f6a1b2c3d4
 Successfully built e5f6a1b2c3d4
-Successfully tagged tax-calculator:latest
+Successfully tagged us.icr.io/sn-labs-rishabh/tax-calculator:1

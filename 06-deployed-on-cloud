@@ -1,4 +1,4 @@
-ibmcloud ce application create --name tax-calculator --image us.icr.io/sn-labs-rishabh/tax-calculator:latest --port 8080
+ibmcloud ce application create --name tax-calculator --image us.icr.io/sn-labs-rishabh/tax-calculator:1 --port 8080
 Creating application 'tax-calculator'...
 The Request is still in progress, waiting for application to become ready...
 Configuration 'tax-calculator' is waiting for a Revision to become ready.
@@ -8,4 +8,4 @@ Waiting for load balancer to be ready...
 Run 'ibmcloud ce application get --name tax-calculator' to check the application status.
 OK
 
-URL: https://tax-calculator.1a2b3c4d5e6f.us-south.codeengine.appdomain.cloud
+URL: https://tax-calculator.sn-labs-rishabh.us-south.codeengine.appdomain.cloud
